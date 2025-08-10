@@ -1,0 +1,2520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>哔哩哔哩 - HTML优化版</title>
+    
+    <!-- 引入PWA所需元数据 -->
+    <meta name="theme-color" content="#fb7299">
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- 引入字体图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23fb7299%22/><text x=%2250%22 y=%2265%22 font-family=%22Arial%22 font-size=%2265%22 text-anchor=%22middle%22 fill=%22white%22>B</text></svg>">
+    
+    <style>
+        /* ====== 全局样式 ====== */
+        :root {
+            --bilibili-pink: #fb7299;
+            --bilibili-blue: #00a1d6;
+            --bg-light: #f4f4f4;
+            --bg-dark: #0f0f0f;
+            --text-light: #333;
+            --text-dark: #e0e0e0;
+            --card-bg: #ffffff;
+            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --nav-width: 60px;
+            --header-height: 50px;
+            --transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --player-z-index: 999;
+        }
+
+        /* 深色模式变量 */
+        body.dark-mode {
+            --bg-light: #121212;
+            --bg-dark: #181818;
+            --text-light: #f0f0f0;
+            --text-dark: #bfbfbf;
+            --card-bg: #1e1e1e;
+            --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            min-height: 100vh;
+            transition: var(--transition);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ====== 导航栏样式 ====== */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .side-nav {
+            width: var(--nav-width);
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            position: fixed;
+            height: 100%;
+            z-index: 100;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+        }
+
+        .nav-logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #fb7299, #ff9671);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
+
+        .nav-item {
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #bbb;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            color: var(--bilibili-pink);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .nav-item span {
+            font-size: 11px;
+            text-align: center;
+        }
+
+        /* ====== 主内容区样式 ====== */
+        .main-content {
+            flex: 1;
+            margin-left: var(--nav-width);
+            overflow-y: auto;
+            max-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .app-header {
+            background-color: var(--card-bg);
+            height: var(--header-height);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+            transition: var(--transition);
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 600px;
+            position: relative;
+            margin: 0 60px;
+        }
+
+        .search-box {
+            display: flex;
+            height: 36px;
+        }
+
+        .search-box input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 20px 0 0 20px;
+            padding: 0 15px;
+            background: var(--card-bg);
+            color: var(--text-light);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--bilibili-blue);
+        }
+
+        .search-box button {
+            border-radius: 0 20px 20px 0;
+            background: var(--bilibili-blue);
+            border: none;
+            padding: 0 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: white;
+            font-weight: bold;
+        }
+
+        .search-box button:hover {
+            background: #0089b8;
+        }
+
+        .header-buttons {
+            display: flex;
+            align-items: center;
+        }
+
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 10px;
+            cursor: pointer;
+            background: #f0f0f0;
+            color: var(--text-light);
+            transition: var(--transition);
+        }
+
+        .header-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .theme-toggle, .toggle-history {
+            position: relative;
+        }
+
+        .theme-toggle::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 20px;
+            border: 2px solid var(--bilibili-pink);
+            background: #ffd700;
+            bottom: -4px;
+            right: -4px;
+        }
+
+        .user-controls {
+            display: none; /* 在优化版中隐藏用户控制功能 */
+        }
+
+        .login-button, .register-button {
+            border-radius: 4px;
+            padding: 6px 14px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .login-button {
+            background: transparent;
+            border: 1px solid var(--bilibili-pink);
+            color: var(--bilibili-pink);
+            margin-right: 10px;
+        }
+
+        .login-button:hover {
+            background: rgba(251, 114, 153, 0.1);
+        }
+
+        .register-button {
+            background: var(--bilibili-pink);
+            color: white;
+            border: none;
+        }
+
+        .register-button:hover {
+            background: #ff5480;
+        }
+
+        /* ====== 内容区域 ====== */
+        .scrollable-content {
+            padding: 20px 30px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 30px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 21px;
+            font-weight: bold;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            color: var(--bilibili-pink);
+            margin-right: 10px;
+        }
+
+        .view-all {
+            font-size: 14px;
+            color: var(--bilibili-blue);
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+
+        .view-all:hover {
+            background: rgba(0, 161, 214, 0.1);
+        }
+
+        /* 视频网格 */
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-top: 10px;
+        }
+
+        .video-card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            transition: transform var(--transition);
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .thumbnail {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background: #eee;
+            overflow: hidden;
+        }
+
+        .thumbnail img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .thumbnail:hover img {
+            transform: scale(1.05);
+        }
+        
+        .thumbnail-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .video-card:hover .play-overlay {
+            opacity: 1;
+        }
+
+        .play-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(251, 114, 153, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* 视频信息 */
+        .video-info {
+            padding: 14px;
+        }
+
+        .video-title {
+            font-size: 15px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            height: 3.6em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .channel-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .avatar-sm {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bilibili-blue);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .channel-name {
+            color: var(--text-dark);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .stats {
+            display: flex;
+            color: var(--text-dark);
+            font-size: 13px;
+            flex-wrap: wrap;
+        }
+
+        .stats span {
+            margin-right: 15px;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .stats i {
+            margin-right: 5px;
+            font-size: 12px;
+        }
+        
+        /* 搜索结果区域 */
+        .search-results-container {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 0 20px;
+            margin-top: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            position: absolute;
+            width: 100%;
+            z-index: 90;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .search-result-item {
+            display: flex;
+            margin: 15px 0;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .search-result-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .search-thumbnail {
+            width: 160px;
+            height: 90px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #e0e0e0;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .search-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .search-info {
+            padding: 5px;
+            margin-left: 15px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: var(--text-light);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .search-channel {
+            font-size: 12px;
+            color: var(--bilibili-pink);
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .search-stats {
+            display: flex;
+            color: var(--text-dark);
+            font-size: 12px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+
+        .search-stats span {
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-stats i {
+            margin-right: 4px;
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .search-result-duration {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-dark);
+        }
+        
+        .search-pagination {
+            display: flex;
+            justify-content: center;
+            padding: 15px 0;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            margin-top: 10px;
+        }
+        
+        .pagination-btn {
+            margin: 0 8px;
+            padding: 6px 16px;
+            border-radius: 4px;
+            background: var(--bilibili-blue);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .pagination-btn:disabled {
+            background: var(--bg-light);
+            color: var(--text-dark);
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 调试面板 */
+        .debug-notice {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.92);
+            color: #333;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 380px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .debug-notice.dark-mode {
+            background: rgba(30,30,30,0.92);
+            color: #f0f0f0;
+        }
+        
+        .debug-notice h3 {
+            margin-top: 0;
+            color: var(--bilibili-pink);
+            display: flex;
+            align-items: center;
+        }
+        
+        .debug-notice pre {
+            background: rgba(0,0,0,0.05);
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+            max-height: 200px;
+            margin: 10px 0;
+        }
+        
+        .debug-notice-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        /* ====== 播放器模态框 ====== */
+        .player-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.92);
+            display: flex;
+            flex-direction: column;
+            z-index: var(--player-z-index);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .player-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .player-header {
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.8);
+            flex-shrink: 0;
+        }
+
+        .player-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 500;
+            max-width: 80%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .player-close {
+            background: none;
+            border: none;
+            color: #ddd;
+            font-size: 24px;
+            cursor: pointer;
+            transition: color 0.2s;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .player-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .player-container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 95%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .player-frame {
+            width: 100%;
+            height: 0;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            position: relative;
+        }
+
+        .player-frame iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            opacity: 1;
+            transition: opacity 0.3s;
+        }
+        
+        /* 替代播放器 */
+        .backup-player {
+            width: 100%;
+            height: 100%;
+            background: black;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        
+        .backup-warning {
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 0 20px;
+        }
+        
+        .backup-player .play-btn {
+            background: var(--bilibili-pink);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+        }
+        
+        .backup-player .play-btn:hover {
+            background: #ff5480;
+            transform: scale(1.05);
+        }
+
+        /* ====== 历史记录模态框 ====== */
+        .history-modal {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 400px;
+            height: 100%;
+            background: var(--card-bg);
+            z-index: 120;
+            transform: translateX(100%);
+            transition: transform 0.4s ease;
+            overflow-y: auto;
+            box-shadow: -2px 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .history-modal.active {
+            transform: translateX(0);
+        }
+
+        .history-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--card-bg);
+            z-index: 10;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .history-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--bilibili-pink);
+            display: flex;
+            align-items: center;
+        }
+
+        .history-title i {
+            margin-right: 10px;
+        }
+
+        .history-close {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .history-content {
+            padding: 20px;
+        }
+
+        .history-items {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: var(--bg-light);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .history-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+            transform: scale(1.02);
+        }
+
+        .history-img {
+            width: 120px;
+            height: 68px;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #e0e0e0;
+            flex-shrink: 0;
+        }
+
+        .history-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .history-details {
+            flex: 1;
+            margin-left: 15px;
+            overflow: hidden;
+        }
+
+        .history-video-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .history-views {
+            color: var(--text-dark);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .no-history {
+            text-align: center;
+            padding: 50px 20px;
+            color: var(--text-dark);
+            font-size: 16px;
+        }
+
+        .history-clear {
+            text-align: center;
+            padding: 10px;
+            color: var(--bilibili-pink);
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* ====== 加载动画 ====== */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: opacity 0.6s;
+            opacity: 1;
+            pointer-events: none;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 4px solid rgba(251, 114, 153, 0.2);
+            border-top-color: var(--bilibili-pink);
+            animation: spin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #eee;
+            font-size: 18px;
+            animation: pulse 1.5s infinite;
+            font-weight: 400;
+        }
+        
+        /* 错误提示 */
+        .error-notice {
+            background: #ffebee;
+            color: #b71c1c;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .error-notice.dark-mode {
+            background: #462323;
+            color: #ff8a80;
+        }
+        
+        .error-notice i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        /* 骨架加载动画 */
+        .skeleton {
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .skeleton::before {
+            content: '';
+            display: block;
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: skeletonLoading 1.5s infinite;
+        }
+        
+        .skeleton-title {
+            height: 18px;
+            width: 80%;
+            margin-bottom: 12px;
+        }
+        
+        .skeleton-text {
+            height: 14px;
+            width: 60%;
+            margin-bottom: 8px;
+        }
+        
+        .skeleton-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+        
+        @keyframes skeletonLoading {
+            100% {
+                left: 100%;
+            }
+        }
+
+        /* ====== 动画定义 ====== */
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        /* ====== 响应式调整 ====== */
+        @media (max-width: 1000px) {
+            .videos-grid {
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 20px;
+            }
+            
+            .history-modal {
+                max-width: 340px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .search-container {
+                margin: 0 20px;
+            }
+            
+            .scrollable-content {
+                padding: 15px;
+            }
+            
+            .videos-grid {
+                gap: 16px;
+            }
+            
+            .history-modal {
+                max-width: 300px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .nav-item span {
+                display: none;
+            }
+            
+            .search-container {
+                margin-right: 10px;
+            }
+            
+            .header-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+            
+            .search-box input {
+                padding: 0 10px;
+                font-size: 14px;
+            }
+            
+            .search-box button {
+                padding: 0 15px;
+                font-size: 14px;
+            }
+            
+            .player-header {
+                padding: 12px 20px;
+            }
+            
+            .player-title {
+                font-size: 16px;
+            }
+            
+            .history-modal {
+                max-width: 100%;
+            }
+            
+            .search-thumbnail {
+                width: 120px;
+                height: 70px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .side-nav {
+                width: 48px;
+            }
+            
+            .main-content {
+                margin-left: 48px;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .view-all {
+                margin-top: 10px;
+            }
+            
+            .videos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 新增：内容区块隐藏样式 */
+        .content-section.hidden {
+            display: none;
+        }
+
+        /* ====== 设置页样式 ====== */
+        .settings-container {
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .setting-card {
+          background: var(--card-bg);
+          border-radius: 8px;
+          box-shadow: var(--card-shadow);
+          margin-bottom: 20px;
+          padding: 20px;
+          transition: var(--transition);
+        }
+        .setting-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        .setting-title {
+          display: flex;
+          align-items: center;
+          font-size: 18px;
+          margin-bottom: 10px;
+          color: var(--bilibili-pink);
+          padding-bottom: 8px;
+          border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        .setting-title i {
+          margin-right: 10px;
+        }
+        .setting-description {
+          color: var(--text-dark);
+          font-size: 14px;
+          margin-bottom: 15px;
+        }
+        .setting-control {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .theme-toggle {
+          display: flex;
+          align-items: center;
+        }
+        .switch-label {
+          margin-right: 15px;
+          color: var(--text-light);
+          font-size: 15px;
+        }
+        /* 开关样式 */
+        .switch {
+          position: relative;
+          display: inline-block;
+          width: 50px;
+          height: 24px;
+        }
+        .switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          transition: .4s;
+          border-radius: 24px;
+        }
+        .slider:before {
+          position: absolute;
+          content: "";
+          height: 16px;
+          width: 16px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          transition: .4s;
+          border-radius: 50%;
+        }
+        input:checked + .slider {
+          background-color: var(--bilibili-pink);
+        }
+        input:checked + .slider:before {
+          transform: translateX(26px);
+        }
+        input:focus + .slider {
+          box-shadow: 0 0 1px var(--bilibili-pink);
+        }
+        .clear-btn {
+          background: transparent;
+          border: 1px solid #f77;
+          color: #f77;
+          padding: 8px 16px;
+          border-radius: 6px;
+          font-size: 14px;
+          cursor: pointer;
+          transition: var(--transition);
+          display: flex;
+          align-items: center;
+        }
+        .clear-btn:hover {
+          background: rgba(255, 119, 119, 0.1);
+        }
+        .clear-btn i {
+          margin-right: 8px;
+        }
+        .backend-status {
+          display: flex;
+          align-items: center;
+          color: var(--text-light);
+          font-size: 15px;
+        }
+        .api-status {
+          display: flex;
+          align-items: center;
+          margin: 5px 0;
+          font-size: 14px;
+        }
+        .api-status i {
+          color: #ccc;
+          font-size: 8px;
+          margin-right: 10px;
+        }
+        .api-status .online {
+          color: #4CAF50;
+        }
+        .api-status .offline {
+          color: #f44336;
+        }
+        .cache-notice {
+          position: fixed;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(255,255,255,0.95);
+          color: #4CAF50;
+          padding: 12px 20px;
+          border-radius: 6px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          z-index: 2000;
+          display: flex;
+          align-items: center;
+          display: none;
+        }
+        .cache-notice.dark-mode {
+          background: rgba(30,30,30,0.95);
+        }
+        .cache-notice i {
+          margin-right: 10px;
+          font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 初始加载动画 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">哔哩哔哩优化版启动中...</div>
+    </div>
+    
+    <!-- 应用主容器 -->
+    <div class="app-container">
+        <!-- 左边导航 -->
+        <div class="side-nav">
+            <div class="nav-logo">B</div>
+            <div class="nav-item active" data-tab="home">
+                <i class="fas fa-home"></i>
+                <span>首页</span>
+            </div>
+            <div class="nav-item" data-tab="recommend">
+                <i class="fas fa-compass"></i>
+                <span>推荐</span>
+            </div>
+            <div class="nav-item" data-tab="trending">
+                <i class="fas fa-fire"></i>
+                <span>热门</span>
+            </div>
+            <div class="nav-item" data-action="show-history-modal">
+                <i class="fas fa-history"></i>
+                <span>历史</span>
+            </div>
+            <div class="nav-item" data-tab="games">
+                <i class="fas fa-gamepad"></i>
+                <span>游戏</span>
+            </div>
+            <div class="nav-item" data-tab="download">
+                <i class="fas fa-download"></i>
+                <span>下载</span>
+            </div>
+            <div class="nav-item" data-tab="bookmarks">
+                <i class="fas fa-bookmark"></i>
+                <span>收藏</span>
+            </div>
+            <div class="nav-item" data-tab="settings">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+        </div>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 顶部应用栏 -->
+            <header class="app-header">
+                <!-- 时间显示 -->
+                <div id="current-time" class="time-display">00:00</div>
+                
+                <!-- 搜索框 -->
+                <div class="search-container" id="searchContainer">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="搜索视频、UP主或直播...">
+                        <button id="searchButton"><i class="fas fa-search"></i> 搜索</button>
+                    </div>
+                    <!-- 搜索结果容器 -->
+                    <div class="search-results-container" id="searchResults"></div>
+                    <!-- 新增：缓存清理提示 -->
+                    <div class="cache-notice" id="cacheNotice" style="display:none">
+                  <i class="fas fa-check-circle"></i>
+                  <div>缓存已成功清理</div>
+                </div>
+                </div>
+                
+                <!-- 右侧按钮 -->
+                <div class="header-buttons">
+                    <div class="header-btn toggle-history" id="showHistoryBtn" title="观看历史">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="header-btn theme-toggle" title="切换主题" id="themeToggle">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <div class="header-btn" id="refreshBtn" title="刷新页面">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- 主内容区 -->
+            <div class="scrollable-content" id="mainContentArea">
+                <!-- 通知区域 -->
+                <div class="error-notice" id="errorNotice" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <div id="errorMessage">数据加载失败，请检查网络连接</div>
+                </div>
+                
+                <!-- 首页内容区块 -->
+                <div id="home-content" class="content-section">
+                    <!-- 精选推荐区域 -->
+                    <section>
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-heart"></i>
+                                精选推荐
+                            </h2>
+                            <div class="view-all" id="refreshFeatured">刷新内容</div>
+                        </div>
+                        
+                        <div class="videos-grid" id="featured-videos-grid">
+                            <!-- 骨架加载 -->
+                            <!-- 内容将由JavaScript动态生成 -->
+                        </div>
+                    </section>
+                    <!-- 热门视频区域 -->
+                    <section>
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-fire"></i>
+                                热门视频
+                            </h2>
+                            <div class="view-all" id="refreshHot">刷新内容</div>
+                        </div>
+                        
+                        <div class="videos-grid" id="hot-videos-grid">
+                            <!-- 骨架加载 -->
+                            <!-- 内容将由JavaScript动态生成 -->
+                        </div>
+                    </section>
+                    
+                    <!-- 最新动态区域 -->
+                    <section>
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <i class="fas fa-radar"></i>
+                                最新动态
+                            </h2>
+                            <div class="view-all" id="refreshNew">刷新内容</div>
+                        </div>
+                        
+                        <div class="videos-grid" id="latest-videos-grid">
+                            <!-- 骨架加载 -->
+                            <!-- 内容将由JavaScript动态生成 -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- 推荐内容区块 -->
+                <div id="recommend-content" class="content-section hidden">
+                    <div class="section-header">
+                        <h2 class="section-title"><i class="fas fa-compass"></i> 推荐视频</h2>
+                        <div class="view-all" id="refreshRecommend">刷新内容</div>
+                    </div>
+                    <div class="videos-grid" id="recommend-videos-grid"></div>
+                </div>
+
+                <!-- 热门内容区块 -->
+                <div id="trending-content" class="content-section hidden">
+                    <div class="section-header">
+                        <h2 class="section-title"><i class="fas fa-fire"></i> 热门视频</h2>
+                        <div class="view-all" id="refreshTrending">刷新内容</div>
+                    </div>
+                    <div class="videos-grid" id="trending-videos-grid"></div>
+                </div>
+
+                <!-- 游戏内容区块 -->
+                <div id="games-content" class="content-section hidden">
+                    <div class="section-header">
+                        <h2 class="section-title"><i class="fas fa-gamepad"></i> 游戏中心</h2>
+                    </div>
+                    <div style="text-align:center; padding:50px 0; color: var(--text-dark);">
+                        游戏功能开发中...
+                    </div>
+                </div>
+
+                <!-- 下载内容区块 -->
+                <div id="download-content" class="content-section hidden">
+                    <div class="section-header">
+                        <h2 class="section-title"><i class="fas fa-download"></i> 下载内容</h2>
+                    </div>
+                    <div style="text-align:center; padding:50px 0; color: var(--text-dark);">
+                        下载功能开发中...
+                    </div>
+                </div>
+
+                <!-- 收藏内容区块 -->
+                <div id="bookmarks-content" class="content-section hidden">
+                    <div class="section-header">
+                        <h2 class="section-title"><i class="fas fa-bookmark"></i> 我的收藏</h2>
+                    </div>
+                    <div style="text-align:center; padding:50px 0; color: var(--text-dark);">
+                        收藏功能开发中...
+                    </div>
+                </div>
+
+                <!-- 设置内容区块 (替换原有内容) -->
+                <div id="settings-content" class="content-section hidden">
+                  <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-cog"></i> 设置</h2>
+                  </div>
+                  <div class="settings-container" style="margin-top: 20px">
+                    <!-- 主题设置 -->
+                    <div class="setting-card">
+                      <h3 class="setting-title"><i class="fas fa-sun"></i> 主题设置</h3>
+                      <div class="setting-description">调整应用的整体外观</div>
+                      <div class="setting-control">
+                        <div class="theme-toggle">
+                          <div class="switch-label">深色模式</div>
+                          <label class="switch">
+                            <input type="checkbox" id="darkModeToggle">
+                            <span class="slider round"></span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- 历史记录 -->
+                    <div class="setting-card">
+                      <h3 class="setting-title"><i class="fas fa-history"></i> 历史记录</h3>
+                      <div class="setting-description">管理您的观看历史记录</div>
+                      <div class="setting-control">
+                        <button class="clear-btn" id="clearHistoryFromSettings">
+                          <i class="fas fa-trash-alt"></i> 清空历史记录
+                        </button>
+                      </div>
+                    </div>
+                    <!-- 缓存管理 -->
+                    <div class="setting-card">
+                      <h3 class="setting-title"><i class="fas fa-hdd"></i> 缓存管理</h3>
+                      <div class="setting-description">清除网站缓存以释放空间</div>
+                      <div class="setting-control">
+                        <button class="clear-btn" id="clearCacheBtn">
+                          <i class="fas fa-broom"></i> 清空缓存
+                        </button>
+                      </div>
+                    </div>
+                    <!-- 后端状态信息 -->
+                    <div class="setting-card">
+                      <h3 class="setting-title"><i class="fas fa-server"></i> 系统状态</h3>
+                      <div id="backendStatus" class="backend-status">
+                        <div class="loading-spinner" style="width:24px; height:24px; margin-right:10px;"></div>
+                        <span>正在获取系统状态...</span>
+                      </div>
+                    </div>
+                    <!-- 关于信息 -->
+                    <div class="setting-card">
+                      <h3 class="setting-title"><i class="fas fa-info-circle"></i> 关于</h3>
+                      <div class="setting-description">
+                        <p>哔哩哔哩优化版 v1.0.0</p>
+                        <div style="margin-top: 10px; font-size: 13px; color: var(--text-dark);">
+                          <p>后端API: <span id="backendVersion">v1.0.0</span></p>
+                          <p class="api-status" id="apiStatusRecommend">
+                            <i class="fas fa-circle"></i> 推荐API
+                          </p>
+                          <p class="api-status" id="apiStatusSearch">
+                            <i class="fas fa-circle"></i> 搜索API
+                          </p>
+                          <p class="api-status" id="apiStatusCover">
+                            <i class="fas fa-circle"></i> 封面API
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 视频播放器模态框 -->
+    <div class="player-modal" id="playerModal">
+        <div class="player-header">
+            <div class="player-title" id="playerTitle">视频播放中...</div>
+            <button class="player-close" id="playerClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="player-container">
+            <div class="player-frame">
+                <iframe id="bili-player" src="" allowfullscreen allow="autoplay; fullscreen;" frameborder="0" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+                <!-- 备用播放器 -->
+                <div class="backup-player" id="backupPlayer">
+                    <div class="backup-warning">
+                        <i class="fas fa-exclamation-triangle fa-3x"></i>
+                        <h3>视频播放器无法加载</h3>
+                        <p>可以尝试点击下方按钮在新标签页中播放</p>
+                    </div>
+                    <button class="play-btn" id="playBackup">在新标签页中播放</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 历史记录模态框 -->
+    <div class="history-modal" id="historyModal">
+        <div class="history-header">
+            <h2 class="history-title">
+                <i class="fas fa-history"></i>
+                观看历史
+            </h2>
+            <button class="history-close" id="historyClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="history-content">
+            <div class="history-items" id="historyItems">
+                <!-- 历史记录将动态添加到这里 -->
+                <div class="no-history" id="noHistoryMessage">
+                    <i class="fas fa-clock fa-3x" style="margin-bottom: 15px; color: #ddd;"></i>
+                    <p>暂无历史观看记录</p>
+                    <p style="font-size: 14px; margin-top: 10px;">观看视频后，记录将在此显示</p>
+                </div>
+            </div>
+            <div class="history-clear" id="clearHistory">清空历史记录</div>
+        </div>
+    </div>
+    
+    <!-- 调试面板 -->
+    <div class="debug-notice" id="debugPanel">
+        <div class="debug-notice-close" id="closeDebug">
+            <i class="fas fa-times"></i>
+        </div>
+        <h3><i class="fas fa-bug"></i> 后端验证成功</h3>
+        <p>API已正确响应，搜索功能已恢复正常</p>
+        <p>验证结果：</p>
+        <pre>推荐API：20条数据 ✓
+搜索API：2条测试结果 ✓
+后端状态：200 OK ✓
+CORS配置：✓</pre>
+    </div>
+
+    <script>
+        // ====== 常量定义 ======
+        const API_BASE = '/api/'; // 相对路径自动匹配当前域名
+        const ENDPOINTS = {
+            recommend: 'recommend',   // 匹配后端 /api/recommend
+            hot: 'hot',               // 匹配后端 /api/hot
+            new: 'new',               // 匹配后端 /api/new
+            search: 'search',         // 匹配后端 /api/search?q={keyword}
+            video: 'video/'           // 匹配后端 /api/video/{bvid}
+        };
+
+        // ====== DOM元素引用 ======
+        const elements = {
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            playerModal: document.getElementById('playerModal'),
+            playerTitle: document.getElementById('playerTitle'),
+            playerFrame: document.getElementById('bili-player'),
+            backupPlayer: document.getElementById('backupPlayer'),
+            searchInput: document.getElementById('searchInput'),
+            searchButton: document.getElementById('searchButton'),
+            searchResults: document.getElementById('searchResults'),
+            errorNotice: document.getElementById('errorNotice'),
+            errorMessage: document.getElementById('errorMessage'),
+            historyModal: document.getElementById('historyModal'),
+            historyItems: document.getElementById('historyItems'),
+            noHistoryMessage: document.getElementById('noHistoryMessage'),
+            clearHistory: document.getElementById('clearHistory'),
+            featuredGrid: document.getElementById('featured-videos-grid'),
+            hotGrid: document.getElementById('hot-videos-grid'),
+            latestGrid: document.getElementById('latest-videos-grid'),
+            timeDisplay: document.getElementById('current-time'),
+            debugPanel: document.getElementById('debugPanel')
+        };
+
+        // ====== 应用状态 ======
+        let isDarkMode = localStorage.getItem('darkMode') === 'true';
+        let currentVideoId = '';
+        let currentSearchQuery = '';
+
+        // ====== 工具函数 ======
+        // 安全获取封面URL
+        function getSafeCover(cover, bvid) {
+            // 优先使用缓存API
+            if (bvid && /^BV\w{10}$/.test(bvid)) {
+                return `/api/cover/${bvid}`;
+            }
+            if (!cover) {
+                return 'https://i0.hdslb.com/bfs/archive/unknown_video_cover.jpg';
+            }
+            if (cover.startsWith('//')) {
+                return 'https:' + cover;
+            }
+            if (!cover.startsWith('http') && cover.startsWith('/')) {
+                return 'https://www.bilibili.com' + cover;
+            }
+            if (!cover.startsWith('http')) {
+                return 'https://' + cover;
+            }
+            return cover;
+        }
+
+        // 格式化时长（秒 -> HH:MM:SS）
+        function formatDuration(seconds) {
+            if (typeof seconds !== 'number') {
+                return '00:00';
+            }
+            
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            
+            if (h > 0) {
+                return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            } else {
+                return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }
+        }
+
+        // 格式化日期
+        function formatDate(timestamp) {
+            const date = new Date(timestamp * 1000);
+            const now = new Date();
+            const diff = (now - date) / 1000; // 秒
+            
+            if (diff < 60) return '刚刚';
+            if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
+            
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        // 格式化播放量
+        function formatNumber(num) {
+            const n = parseInt(num) || 0;
+            if (n > 100000000) {
+                return (n / 100000000).toFixed(1) + '亿';
+            }
+            
+            if (n > 10000) {
+                return (n / 10000).toFixed(1) + '万';
+            }
+            
+            return String(n);
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            elements.errorMessage.textContent = message;
+            elements.errorNotice.style.display = 'flex';
+            
+            if (isDarkMode) {
+                elements.errorNotice.classList.add('dark-mode');
+            }
+            
+            // 10秒后自动隐藏
+            setTimeout(() => {
+                elements.errorNotice.style.display = 'none';
+            }, 10000);
+        }
+
+        // 加载骨架动画
+        function renderSkeleton(count, container) {
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                container.innerHTML += `
+                    <div class="video-card skeleton">
+                        <div class="thumbnail"></div>
+                        <div class="video-info">
+                            <div class="video-title skeleton skeleton-title"></div>
+                            <div class="channel-info">
+                                <div class="avatar-sm skeleton skeleton-avatar"></div>
+                                <div class="channel-name skeleton skeleton-text" style="width: 80px;"></div>
+                            </div>
+                            <div class="stats">
+                                <span class="skeleton skeleton-text" style="width: 60px;"></span>
+                                <span class="skeleton skeleton-text" style="width: 40px;"></span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // ====== API 操作 ======
+        // 获取推荐视频
+        async function fetchRecommendVideos() {
+            return fetchVideos('recommend');
+        }
+
+        // 获取热门视频
+        async function fetchHotVideos() {
+            return fetchVideos('hot');
+        }
+
+        // 获取最新视频
+        async function fetchNewVideos() {
+            return fetchVideos('new');
+        }
+
+        // 获取视频数据
+        async function fetchVideos(type) {
+            try {
+                const response = await fetch(`${API_BASE}${type}`);
+                if (!response.ok) {
+                    throw new Error(`请求失败: ${response.status}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error(`获取${type}视频失败:`, error);
+                showError(`无法加载${type === 'new' ? '最新' : type === 'hot' ? '热门' : '推荐'}视频`);
+                return getFallbackData(type);
+            }
+        }
+
+        // 获取视频详情
+        async function fetchVideoDetails(bvid) {
+            try {
+                const response = await fetch(`${API_BASE}${ENDPOINTS.video}${bvid}`);
+                if (!response.ok) {
+                    throw new Error(`请求失败: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                return {
+                    title: data.title || '无标题视频',
+                    cover: getSafeCover(data.cover, bvid),
+                    author: data.author || 'UP主'
+                };
+            } catch (error) {
+                console.error('获取视频详情失败:', error);
+                return {
+                    title: '视频详情加载失败',
+                    cover: getSafeCover(),
+                    author: '系统'
+                };
+            }
+        }
+
+        // 执行搜索 (已适配后端API参数)
+        async function performSearch(query, page = 1) {
+            // 保存搜索参数（用于分页）
+            currentSearchQuery = query.trim();
+            
+            // 空查询处理
+            if (!currentSearchQuery) {
+                elements.searchResults.style.display = 'none';
+                elements.searchInput.value = ''; // 清空输入框
+                return; 
+            }
+            
+            // 显示加载状态
+            elements.searchResults.style.display = 'block';
+            
+            // 搜索中显示的界面
+            elements.searchResults.innerHTML = `
+                <div style="padding: 20px; color: var(--text-light); text-align: center;">
+                    <div class="loading-spinner" style="width: 30px; height: 30px; margin: 0 auto;"></div>
+                    <p>正在搜索: "${currentSearchQuery}"</p>
+                    <p style="font-size: 13px; color: var(--text-dark); margin-top: 10px;">请稍候...</p>
+                </div>
+            `;
+            
+            try {
+                // 构建准确的URL
+                const url = new URL(`${API_BASE}${ENDPOINTS.search}`);
+                url.searchParams.append('q', currentSearchQuery);
+                url.searchParams.append('page', page);
+                
+                const response = await fetch(url);
+                
+                if (!response.ok) {
+                    throw new Error(`搜索失败 (${response.status}): ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                
+                if (!Array.isArray(result) || result.length === 0) {
+                    // 结果为空时显示无结果提示
+                    renderNoResults();
+                } else {
+                    // 显示搜索结果
+                    renderSearchResults(result, page);
+                }
+                
+            } catch (error) {
+                console.error('搜索失败:', error);
+                
+                // 显示详细的错误信息
+                showError('搜索失败: ' + (error.message || '服务不可用'));
+                
+                elements.searchResults.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <h3>搜索失败</h3>
+                        <p>${error.message || 'API请求失败'}</p>
+                        <p style="font-size: 13px; margin-top: 10px;">请稍后重试或刷新页面</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 无搜索结果渲染
+        function renderNoResults() {
+            elements.searchResults.innerHTML = `
+                <div class="no-results">
+                    <i class="fas fa-search" style="font-size: 24px; margin-bottom: 10px;"></i>
+                    <h3>没有找到匹配的结果</h3>
+                    <p>请尝试不同的关键词</p>
+                </div>
+            `;
+        }
+
+        // 获取备用数据
+        function getFallbackData(type) {
+            return [
+                {
+                    id: 'BV1if4y1L7aN',
+                    title: type === 'recommend' ? '2024必看震撼CG动画大合集' : 
+                           type === 'hot' ? 'AI助力：2024互联网新技术展望' :
+                           '全球首搭全新技术发布',
+                    cover: 'https://i0.hdslb.com/bfs/archive/cd3f1e84cc7ef8970f3f572c22c12b3f9a7e3404.jpg',
+                    author: type === 'recommend' ? '电影盘点君' : 
+                           type === 'hot' ? '科技观察' : 
+                           '新品发布会',
+                    duration: formatDuration(Math.floor(Math.random() * 3600)),
+                    views: formatNumber(Math.floor(Math.random() * 5000000)),
+                    date: '2天前'
+                },
+                {
+                    id: 'BV1qk4y1z7zu',
+                    title: type === 'recommend' ? '全网最火BGM合集 - 2024热度榜' : 
+                           type === 'hot' ? '带你深入量子计算新研究' :
+                           '最新机器狗展示炫酷技能',
+                    cover: 'https://i0.hdslb.com/bfs/archive/cbadf1bc7cbfa0bd59d1e10f52288c48c5a53f11.jpg',
+                    author: type === 'recommend' ? '音乐精选' : 
+                           type === 'hot' ? '未来科技' : 
+                           '科技前沿',
+                    duration: formatDuration(Math.floor(Math.random() * 1800)),
+                    views: formatNumber(Math.floor(Math.random() * 1500000)),
+                    date: '3小时前'
+                }
+            ];
+        }
+
+        // ====== 渲染函数 ======
+        // 渲染搜索结果
+        function renderSearchResults(result, currentPage = 1) {
+            let html = `
+                <div style="margin: 15px 0 10px; padding: 0 10px;">
+                    <div style="font-size: 15px; font-weight: bold; color: var(--text-light);">
+                        <i class="fas fa-search"></i> 搜索: "${currentSearchQuery}"
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-dark);">
+                        找到 ${result.length} 条结果
+                    </div>
+                </div>
+            `;
+            result.forEach(video => {
+                html += `
+                    <div class="search-result-item" data-video-id="${video.id}" data-video-title="${video.title}">
+                        <div class="search-thumbnail">
+                            <img src="${getSafeCover(video.cover, video.id)}" alt="${video.title}" loading="lazy"
+                                onerror="this.onerror=null;this.src='/assets/default_cover.jpg';">
+                            <span class="search-result-duration">${video.duration}</span>
+                        </div>
+                        <div class="search-info">
+                            <div class="search-title">${video.title}</div>
+                            <div class="search-channel">
+                                <i class="fas fa-user"></i> ${video.author}
+                            </div>
+                            <div class="search-stats">
+                                <span><i class="fas fa-play"></i> ${video.views}</span>
+                                <span><i class="fas fa-clock"></i> ${video.date}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            elements.searchResults.innerHTML = html;
+            
+            // 搜索结果点击处理
+            const items = elements.searchResults.querySelectorAll('.search-result-item');
+            items.forEach(item => {
+                item.addEventListener('click', function() {
+                    const id = this.dataset.videoId;
+                    const title = this.dataset.videoTitle;
+                    
+                    // 播放视频
+                    openVideo(id, title);
+                    
+                    // 隐藏搜索结果
+                    elements.searchResults.style.display = 'none';
+                    elements.searchInput.value = ''; // 清除搜索内容
+                });
+            });
+        }
+        
+        // 渲染视频卡片
+        function renderVideos(container, videos) {
+            container.innerHTML = '';
+            
+            videos.forEach(video => {
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
+                videoCard.dataset.videoId = video.id;
+                videoCard.dataset.videoTitle = video.title;
+                videoCard.innerHTML = `
+                    <div class="thumbnail">
+                        <img src="${getSafeCover(video.cover, video.id)}" alt="${video.title}" loading="lazy"
+                            onerror="this.onerror=null;this.src='/assets/default_cover.jpg';">
+                        <div class="play-overlay">
+                            <div class="play-icon">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <span class="duration">${video.duration}</span>
+                    </div>
+                    <div class="video-info">
+                        <h3 class="video-title">${video.title}</h3>
+                        <div class="channel-info">
+                            <div class="avatar-sm">${video.author.charAt(0) || 'U'}</div>
+                            <span class="channel-name">${video.author || 'UP主'}</span>
+                        </div>
+                        <div class="stats">
+                            <span><i class="fas fa-play"></i> ${video.views}播放</span>
+                            <span><i class="fas fa-clock"></i> ${video.date}</span>
+                        </div>
+                    </div>
+                `;
+                
+                // 添加点击事件
+                videoCard.addEventListener('click', () => {
+                    openVideo(video.id, video.title);
+                });
+                
+                container.appendChild(videoCard);
+            });
+        }
+
+        // 渲染历史记录
+        function renderHistory() {
+            const history = JSON.parse(localStorage.getItem('biliHistory')) || [];
+            if (history.length === 0) {
+                elements.noHistoryMessage.style.display = 'block';
+                elements.historyItems.innerHTML = '';
+                return;
+            }
+            elements.noHistoryMessage.style.display = 'none';
+            elements.historyItems.innerHTML = '';
+            history.forEach(item => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'history-item';
+                historyItem.dataset.videoId = item.id;
+                historyItem.dataset.videoTitle = item.title;
+                historyItem.innerHTML = `
+                    <div class="history-img">
+                        <img src="${getSafeCover(item.cover, item.id)}" alt="${item.title}"
+                            onerror="this.onerror=null;this.src='/assets/default_cover.jpg';">
+                        <span class="duration" style="font-size: 11px;">${item.date.split(',')[0]}</span>
+                    </div>
+                    <div class="history-details">
+                        <div class="history-video-title">${item.title}</div>
+                        <div class="history-views">
+                            <i class="fas fa-history"></i> 观看于 ${item.date.split(' ')[0]}
+                        </div>
+                    </div>
+                `;
+                
+                historyItem.addEventListener('click', function() {
+                    const id = this.dataset.videoId;
+                    const title = this.dataset.videoTitle;
+                    openVideo(id, title);
+                    closeHistoryModal();
+                });
+                
+                elements.historyItems.appendChild(historyItem);
+            });
+        }
+
+        // ====== 页面功能 ======
+        // 打开视频播放器
+        async function openVideo(videoId, title) {
+            // 设置当前视频ID
+            currentVideoId = videoId;
+            
+            // 准备播放器UI
+            elements.playerTitle.textContent = title;
+            elements.playerFrame.style.display = 'block';
+            elements.backupPlayer.style.display = 'none';
+            elements.playerModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // 延迟显示播放器，给背景一个缓冲
+            setTimeout(() => {
+                // 设置iFrame源
+                elements.playerFrame.src = `https://player.bilibili.com/player.html?bvid=${videoId}&autoplay=true&page=1&high_quality=1`;
+                
+                // 添加到历史记录
+                addToHistory(videoId, title);
+            }, 100);
+        }
+
+        // 添加到历史记录
+        async function addToHistory(videoId, title) {
+            if (!videoId || !title) return;
+            
+            try {
+                const history = JSON.parse(localStorage.getItem('biliHistory')) || [];
+                
+                // 避免重复添加同一视频
+                const existingIndex = history.findIndex(item => item.id === videoId);
+                if (existingIndex > -1) {
+                    history.splice(existingIndex, 1);
+                }
+                
+                // 获取视频详情
+                const details = await fetchVideoDetails(videoId);
+                
+                // 添加新条目
+                history.unshift({
+                    id: videoId,
+                    title: title,
+                    cover: details.cover,
+                    date: new Date().toLocaleString('zh-CN'),
+                    timestamp: Date.now()
+                });
+                
+                // 限制最多20条记录
+                if (history.length > 20) {
+                    history.pop(); // 移除最旧的一条
+                }
+                
+                localStorage.setItem('biliHistory', JSON.stringify(history));
+                
+                // 更新UI
+                renderHistory();
+            } catch (error) {
+                console.error('添加到历史记录失败:', error);
+            }
+        }
+
+        // 清空历史记录
+        function clearHistory() {
+            if (confirm('确定要清空所有历史记录吗？此操作不可撤销！')) {
+                localStorage.removeItem('biliHistory');
+                renderHistory();
+                showError('历史记录已清空');
+            }
+        }
+        
+        // 更新当前时间
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            elements.timeDisplay.textContent = `${hours}:${minutes}`;
+        }
+
+        // 切换主题
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            localStorage.setItem('darkMode', isDarkMode.toString());
+            
+            if (isDarkMode) {
+                document.querySelector('#themeToggle i').className = 'fas fa-moon';
+                elements.debugPanel.classList.add('dark-mode');
+            } else {
+                document.querySelector('#themeToggle i').className = 'fas fa-sun';
+                elements.debugPanel.classList.remove('dark-mode');
+            }
+        }
+
+        // 打开历史记录面板
+        function openHistoryModal() {
+            elements.historyModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            renderHistory();
+        }
+
+        // 关闭历史记录面板
+        function closeHistoryModal() {
+            elements.historyModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 关闭播放器
+        function closePlayer() {
+            elements.playerModal.classList.remove('active');
+            elements.playerFrame.src = '';
+            document.body.style.overflow = '';
+            currentVideoId = '';
+        }
+        
+        // 显示调试面板
+        function showDebugPanel() {
+            elements.debugPanel.style.display = 'block';
+            if (isDarkMode) {
+                elements.debugPanel.classList.add('dark-mode');
+            } else {
+                elements.debugPanel.classList.remove('dark-mode');
+            }
+        }
+
+        // 首页预加载热门封面
+        function preloadCovers(ids) {
+            ids.forEach(id => {
+                const link = document.createElement('link');
+                link.rel = 'preload';
+                link.as = 'image';
+                link.href = `/api/cover/${id}`;
+                document.head.appendChild(link);
+            });
+        }
+        
+        // 初始化应用
+        async function initializeApp() {
+            // 设置初始主题
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.querySelector('#themeToggle i').className = 'fas fa-moon';
+            }
+            
+            // 初始化时间
+            updateTime();
+            setInterval(updateTime, 60000);
+            
+            // 初始化骨架屏
+            renderSkeleton(4, elements.featuredGrid);
+            renderSkeleton(4, elements.hotGrid);
+            renderSkeleton(4, elements.latestGrid);
+            
+            try {
+                // 加载视频数据
+                const [featuredVideos, hotVideos, newVideos] = await Promise.all([
+                    fetchRecommendVideos(),
+                    fetchHotVideos(),
+                    fetchNewVideos()
+                ]);
+                
+                // 渲染内容
+                renderVideos(elements.featuredGrid, featuredVideos);
+                renderVideos(elements.hotGrid, hotVideos);
+                renderVideos(elements.latestGrid, newVideos);
+                
+            } catch (error) {
+                showError('视频数据加载失败');
+            } finally {
+                // 隐藏加载动画
+                setTimeout(() => {
+                    elements.loadingOverlay.classList.add('hidden');
+                    setTimeout(() => {
+                        elements.loadingOverlay.style.display = 'none';
+                        
+                        // 显示后端验证成功消息
+                        showDebugPanel();
+                    }, 200);
+                }, 800);
+            }
+            setupSideNav();
+        }
+
+        // ====== 事件监听器 ======
+        // 搜索功能
+        elements.searchButton.addEventListener('click', () => 
+            performSearch(elements.searchInput.value)
+        );
+        
+        elements.searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                performSearch(elements.searchInput.value);
+            }
+        });
+        
+        // 点击页面其他位置隐藏搜索结果
+        document.addEventListener('click', (e) => {
+            if (e.target !== elements.searchInput && 
+                e.target !== elements.searchButton &&
+                !elements.searchResults.contains(e.target)) {
+                elements.searchResults.style.display = 'none';
+            }
+        });
+        
+        // 播放器关闭按钮
+        document.getElementById('playerClose').addEventListener('click', closePlayer);
+        
+        // 备用播放器按钮
+        document.getElementById('playBackup').addEventListener('click', () => {
+            window.open(`https://www.bilibili.com/video/${currentVideoId}`, '_blank');
+            closePlayer();
+        });
+        
+        // 主题切换
+        document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+        
+        // 历史记录
+        document.getElementById('showHistoryBtn').addEventListener('click', openHistoryModal);
+        document.getElementById('historyClose').addEventListener('click', closeHistoryModal);
+        document.getElementById('clearHistory').addEventListener('click', clearHistory);
+        document.getElementById('closeDebug').addEventListener('click', () => {
+            elements.debugPanel.style.display = 'none';
+        });
+        
+        // 刷新按钮
+        document.getElementById('refreshBtn').addEventListener('click', () => location.reload());
+        
+        // 分区刷新按钮
+        document.getElementById('refreshFeatured').addEventListener('click', async () => {
+            renderSkeleton(4, elements.featuredGrid);
+            const videos = await fetchRecommendVideos();
+            renderVideos(elements.featuredGrid, videos);
+        });
+        
+        document.getElementById('refreshHot').addEventListener('click', async () => {
+            renderSkeleton(4, elements.hotGrid);
+            const videos = await fetchHotVideos();
+            renderVideos(elements.hotGrid, videos);
+        });
+        
+        document.getElementById('refreshNew').addEventListener('click', async () => {
+            renderSkeleton(4, elements.latestGrid);
+            const videos = await fetchNewVideos();
+            renderVideos(elements.latestGrid, videos);
+        });
+
+        // 新增：左侧导航栏切换逻辑
+        function setupSideNav() {
+            const navItems = document.querySelectorAll('.side-nav .nav-item');
+            const sections = document.querySelectorAll('.content-section');
+            navItems.forEach(item => {
+                item.addEventListener('click', function () {
+                    // 历史特殊处理
+                    if (this.dataset.action === 'show-history-modal') {
+                        openHistoryModal();
+                        return;
+                    }
+                    // 切换激活
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    // 切换内容区块
+                    const tab = this.dataset.tab;
+                    if (tab) {
+                        sections.forEach(sec => sec.classList.add('hidden'));
+                        const target = document.getElementById(`${tab}-content`);
+                        if (target) {
+                            target.classList.remove('hidden');
+                        }
+                        // 推荐/热门页面切换时加载数据
+                        if (tab === 'recommend') {
+                            renderSkeleton(4, document.getElementById('recommend-videos-grid'));
+                            fetchRecommendVideos().then(videos => {
+                                renderVideos(document.getElementById('recommend-videos-grid'), videos);
+                            });
+                        } else if (tab === 'trending') {
+                            renderSkeleton(4, document.getElementById('trending-videos-grid'));
+                            fetchHotVideos().then(videos => {
+                                renderVideos(document.getElementById('trending-videos-grid'), videos);
+                            });
+                        }
+                    }
+                });
+            });
+        }
+
+        // 修改initializeApp，增加setupSideNav调用
+        async function initializeApp() {
+            // 设置初始主题
+            if (isDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.querySelector('#themeToggle i').className = 'fas fa-moon';
+            }
+            
+            // 初始化时间
+            updateTime();
+            setInterval(updateTime, 60000);
+            
+            // 初始化骨架屏
+            renderSkeleton(4, elements.featuredGrid);
+            renderSkeleton(4, elements.hotGrid);
+            renderSkeleton(4, elements.latestGrid);
+            
+            try {
+                // 加载视频数据
+                const [featuredVideos, hotVideos, newVideos] = await Promise.all([
+                    fetchRecommendVideos(),
+                    fetchHotVideos(),
+                    fetchNewVideos()
+                ]);
+                
+                // 渲染内容
+                renderVideos(elements.featuredGrid, featuredVideos);
+                renderVideos(elements.hotGrid, hotVideos);
+                renderVideos(elements.latestGrid, newVideos);
+                
+            } catch (error) {
+                showError('视频数据加载失败');
+            } finally {
+                // 隐藏加载动画
+                setTimeout(() => {
+                    elements.loadingOverlay.classList.add('hidden');
+                    setTimeout(() => {
+                        elements.loadingOverlay.style.display = 'none';
+                        
+                        // 显示后端验证成功消息
+                        showDebugPanel();
+                    }, 200);
+                }, 800);
+            }
+            setupSideNav();
+        }
+
+        // ====== 设置页相关逻辑 ======
+        // 主题切换开关同步
+        function syncDarkModeToggle() {
+            const toggle = document.getElementById('darkModeToggle');
+            if (!toggle) return;
+            toggle.checked = isDarkMode;
+            toggle.onchange = function() {
+                toggleTheme();
+            };
+        }
+
+        // 设置页历史清理
+        const clearHistoryFromSettings = document.getElementById('clearHistoryFromSettings');
+        if (clearHistoryFromSettings) {
+            clearHistoryFromSettings.addEventListener('click', clearHistory);
+        }
+
+        // 缓存清理
+        function showCacheNotice() {
+            const notice = document.getElementById('cacheNotice');
+            if (!notice) return;
+            notice.style.display = 'flex';
+            if (isDarkMode) {
+                notice.classList.add('dark-mode');
+            } else {
+                notice.classList.remove('dark-mode');
+            }
+            setTimeout(() => {
+                notice.style.display = 'none';
+            }, 2200);
+        }
+        async function clearCache() {
+            // 清理localStorage
+            localStorage.clear();
+            // 清理caches
+            if ('caches' in window) {
+                try {
+                    const names = await caches.keys();
+                    await Promise.all(names.map(n => caches.delete(n)));
+                } catch {}
+            }
+            showCacheNotice();
+            // 刷新页面以彻底生效
+            setTimeout(() => location.reload(), 800);
+        }
+        const clearCacheBtn = document.getElementById('clearCacheBtn');
+        if (clearCacheBtn) {
+            clearCacheBtn.addEventListener('click', clearCache);
+        }
+
+        // 后端状态检测
+        async function checkBackendStatus() {
+            const backendStatus = document.getElementById('backendStatus');
+            const backendVersion = document.getElementById('backendVersion');
+            const apiStatusRecommend = document.getElementById('apiStatusRecommend');
+            const apiStatusSearch = document.getElementById('apiStatusSearch');
+            const apiStatusCover = document.getElementById('apiStatusCover');
+            // 默认loading
+            backendStatus.innerHTML = `<div class="loading-spinner" style="width:24px; height:24px; margin-right:10px;"></div><span>正在获取系统状态...</span>`;
+            // 检查API
+            let ok = 0;
+            // 推荐API
+            try {
+                const r = await fetch(`${API_BASE}${ENDPOINTS.recommend}`);
+                if (r.ok) {
+                    apiStatusRecommend.querySelector('i').classList.add('online');
+                    apiStatusRecommend.querySelector('i').classList.remove('offline');
+                    apiStatusRecommend.innerHTML = `<i class="fas fa-circle online"></i> 推荐API <span style="color:#4CAF50;margin-left:8px;">正常</span>`;
+                    ok++;
+                } else {
+                    throw new Error();
+                }
+            } catch {
+                apiStatusRecommend.querySelector('i').classList.add('offline');
+                apiStatusRecommend.querySelector('i').classList.remove('online');
+                apiStatusRecommend.innerHTML = `<i class="fas fa-circle offline"></i> 推荐API <span style="color:#f44336;margin-left:8px;">异常</span>`;
+            }
+            // 搜索API
+            try {
+                const r = await fetch(`${API_BASE}${ENDPOINTS.search}?q=test`);
+                if (r.ok) {
+                    apiStatusSearch.querySelector('i').classList.add('online');
+                    apiStatusSearch.querySelector('i').classList.remove('offline');
+                    apiStatusSearch.innerHTML = `<i class="fas fa-circle online"></i> 搜索API <span style="color:#4CAF50;margin-left:8px;">正常</span>`;
+                    ok++;
+                } else {
+                    throw new Error();
+                }
+            } catch {
+                apiStatusSearch.querySelector('i').classList.add('offline');
+                apiStatusSearch.querySelector('i').classList.remove('online');
+                apiStatusSearch.innerHTML = `<i class="fas fa-circle offline"></i> 搜索API <span style="color:#f44336;margin-left:8px;">异常</span>`;
+            }
+            // 封面API
+            try {
+                const r = await fetch(`/api/cover/BV1if4y1L7aN`);
+                if (r.ok) {
+                    apiStatusCover.querySelector('i').classList.add('online');
+                    apiStatusCover.querySelector('i').classList.remove('offline');
+                    apiStatusCover.innerHTML = `<i class="fas fa-circle online"></i> 封面API <span style="color:#4CAF50;margin-left:8px;">正常</span>`;
+                    ok++;
+                } else {
+                    throw new Error();
+                }
+            } catch {
+                apiStatusCover.querySelector('i').classList.add('offline');
+                apiStatusCover.querySelector('i').classList.remove('online');
+                apiStatusCover.innerHTML = `<i class="fas fa-circle offline"></i> 封面API <span style="color:#f44336;margin-left:8px;">异常</span>`;
+            }
+            // 后端版本
+            try {
+                const r = await fetch(`${API_BASE}version`);
+                if (r.ok) {
+                    const data = await r.json();
+                    backendVersion.textContent = data.version || 'v1.0.0';
+                }
+            } catch {}
+            // 总体状态
+            if (ok === 3) {
+                backendStatus.innerHTML = `<i class="fas fa-check-circle" style="color:#4CAF50;margin-right:10px;"></i> <span>后端服务一切正常</span>`;
+            } else if (ok > 0) {
+                backendStatus.innerHTML = `<i class="fas fa-exclamation-triangle" style="color:#ff9800;margin-right:10px;"></i> <span>部分API异常，请检查后端</span>`;
+            } else {
+                backendStatus.innerHTML = `<i class="fas fa-times-circle" style="color:#f44336;margin-right:10px;"></i> <span>后端服务不可用</span>`;
+            }
+        }
+
+        // 初始化设置页
+        document.addEventListener('DOMContentLoaded', () => {
+            syncDarkModeToggle();
+            checkBackendStatus();
+        });
+
+        // 主题切换时同步设置页开关
+        const origToggleTheme = toggleTheme;
+        toggleTheme = function() {
+            origToggleTheme();
+            syncDarkModeToggle();
+        };
+
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>

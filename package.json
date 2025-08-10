@@ -1,0 +1,26 @@
+{
+  "name": "bilibili-windows-app",
+  "version": "1.0.0",
+  "description": "Bilibili Windows Style Web Application",
+  "main": "data-api/server.js",
+  "scripts": {
+    "start": "node data-api/server.js",
+    "dev": "node data-api/server.js"
+  },
+  "dependencies": {
+    "axios": "^1.11.0",
+    "bcryptjs": "^3.0.2",
+    "cheerio": "^1.1.2",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^8.0.1",
+    "http-proxy-middleware": "^3.0.5",
+    "jsonwebtoken": "^9.0.2",
+    "node-cache": "^5.1.2",
+    "path": "^0.12.7",
+    "sqlite3": "^5.1.6"
+  },
+  "author": "",
+  "license": "MIT",
+  "keywords": []
+}
